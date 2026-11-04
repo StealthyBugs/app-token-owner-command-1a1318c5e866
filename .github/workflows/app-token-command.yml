@@ -1,0 +1,28 @@
+name: app-token-owner-command-boundary
+on:
+  pull_request_target:
+    types: [opened]
+permissions:
+  contents: write
+jobs:
+  fixed-owner-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Exact pinned action on PR body as owner input
+        id: mint
+        continue-on-error: true
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
+        with:
+          app-id: 5600925
+          private-key: ${{ secrets.APP_KEY_0D529E99 }}
+          owner: ${{ github.event.pull_request.body }}
+          skip-token-revoke: true
+      - name: Fixed exact-output protected effect
+        if: ${{ always() && steps.mint.outputs.probe == 'APP_TOKEN_OWNER_3799FDBA1D4DBB23' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          gh api --method POST "repos/${{ github.repository }}/git/refs" \
+            -f ref="refs/heads/app-token-effect-1a1318c5e866" \
+            -f sha="$TARGET_SHA"
